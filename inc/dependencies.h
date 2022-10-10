@@ -22,6 +22,7 @@ typedef struct
 {
 	long int Unix;
 	long int IPv4;
+	long int IPv6;
 	long int total;
 } Datos;
 
@@ -29,4 +30,7 @@ void configSocketUnix(char *path, long *datos);
 
 void configSocketIPv4(uint16_t puerto, long *datos);
 int setUpIPv4(uint16_t puerto);
+
+void configSocketIPv6(uint16_t puerto, long *datos);
+int setUpIPv6(uint16_t puerto);
 #endif

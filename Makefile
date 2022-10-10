@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS= -g -Wall -pedantic -Werror -Wextra -Wconversion -std=gnu11
 
-all: clean obj/send.o obj/serverFuncs.o bin/server bin/clienteUnix bin/clienteIPv4 cleanObj
+all: clean obj/send.o obj/serverFuncs.o bin/server bin/clienteUnix bin/clienteIPv4 bin/clienteIPv6 cleanObj
 
 bin/server:
 	$(CC) $(CFLAGS) ./src/server.c obj/serverFuncs.o -o ./bin/server.out -lrt
@@ -17,6 +17,9 @@ bin/clienteUnix:
 
 bin/clienteIPv4:
 	$(CC) $(CFLAGS) ./src/clienteIPv4.c obj/send.o -o ./bin/clienteIPv4.out -lrt
+
+bin/clienteIPv6:
+	$(CC) $(CFLAGS) ./src/clienteIPv6.c obj/send.o -o ./bin/clienteIPv6.out -lrt
 
 cleanObj:
 	rm -f ./obj/*

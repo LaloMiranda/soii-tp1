@@ -36,6 +36,7 @@ void configSocketUnix(char *path, long *datos){
 		exit(1);
 	}
 
+	fprintf(stdout, "Server Unix Listo\n");
 	while (1){
         //Espero un mensaje en el socket
 		newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &client_len);
@@ -82,13 +83,13 @@ void configSocketIPv4(uint16_t puerto, long *datos){
 	char buffer[BUF_SIZE];
 	struct sockaddr_in clientAddress;
 	socklen_t client_len;
-	int cliente_socket_fd;
 
 	serverSocket = setUpIPv4(puerto);
 	client_len = sizeof(clientAddress);
 
+	fprintf(stdout, "Server IPv4 Listo\n");
 	while (1){
-		cliente_socket_fd = accept(serverSocket, (struct sockaddr *)&clientAddress, &client_len);
+		int cliente_socket_fd = accept(serverSocket, (struct sockaddr *)&clientAddress, &client_len);
 		if (cliente_socket_fd == -1){
 			fprintf(stdout, "Fallo al aceptar el cliente IPv4\n");
 			exit(1);
@@ -111,7 +112,7 @@ void configSocketIPv4(uint16_t puerto, long *datos){
 					exit(1);
 				}
 				if (rec == 0){
-					fprintf(stdout, "Cliente IPv4 se desconectado\n");
+					fprintf(stdout, "Cliente IPv4 se ha desconectado\n");
 					exit(1);
 				}
 				*datos = *datos + rec;
@@ -152,5 +153,86 @@ int setUpIPv4(uint16_t puerto){
 		perror("Error al poner el socket IPv4 del server como listener\n");
 		exit(EXIT_FAILURE);
 	}
+	return serverSocket;
+}
+
+
+void configSocketIPv6(uint16_t puerto, long *datos)
+{
+	int serverSocket;
+	char buffer[BUF_SIZE];
+	struct sockaddr_in clientAddr;
+	
+	socklen_t client_len;
+	client_len = sizeof(clientAddr);
+
+    serverSocket = setUpIPv6(puerto);
+
+	fprintf(stdout, "Server IPv6 Listo\n");
+	while (1){
+		int cliente_socket_fd = accept(serverSocket, (struct sockaddr *)&clientAddr, &client_len);
+		if (cliente_socket_fd == -1){
+			fprintf(stdout, "Fallo al aceptar el cliente IPv6\n");
+			exit(1);
+		}
+
+		int ch_pid = fork();
+		if (ch_pid == -1){
+			fprintf(stdout, "Fallo al hacer el fork IPv6\n");
+			exit(1);
+		}
+
+		if (ch_pid == 0){
+			// Proceso hijo
+			close(serverSocket);
+			while (1){
+				memset(buffer, 0, BUF_SIZE);
+				long rec = read(cliente_socket_fd, buffer, (BUF_SIZE - 1));
+				if (rec == -1){
+					fprintf(stdout, "Fallo al recibir el mensaje IPv6\n");
+					exit(1);
+				}
+
+				if (rec == 0){
+					fprintf(stdout, "Cliente IPv6 se ha desconectado\n");
+					exit(1);
+				}
+				*datos = *datos + rec;
+			}
+		}
+		else{
+			fprintf(stdout, "Nuevo cliente IPv6\n");
+			close(cliente_socket_fd);
+		}
+	}
+}
+
+int setUpIPv6(uint16_t puerto){
+	int serverSocket;
+	struct sockaddr_in6 servAddr;
+
+	serverSocket = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
+	if (serverSocket == -1){
+		perror("ERROR: Problemas con la creacion del socket IPv6\n");
+		return EXIT_FAILURE;
+	}
+
+	memset(&servAddr, 0, sizeof(servAddr));
+	servAddr.sin6_family = AF_INET6;
+	servAddr.sin6_addr = in6addr_any;
+	servAddr.sin6_port = htons(puerto);
+
+	//Enlaza el socket con la info del servidor IPV6
+	if (bind(serverSocket, (struct sockaddr *)&servAddr, sizeof(servAddr)) < 0){
+		perror("ERROR: No fue posible asignar el socket IPv6\n");
+		close(serverSocket);
+		exit(0);
+	}
+	//Hacemos el socket pasivo para que ACEPTE CONEXIONES
+	if (listen(serverSocket, MAX_CLIENT) < 0){
+		perror("Error al poner el socket IPv6 del server como listener\n");
+		exit(EXIT_FAILURE);
+	}
+
 	return serverSocket;
 }

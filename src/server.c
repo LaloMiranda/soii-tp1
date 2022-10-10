@@ -2,19 +2,21 @@
 
 int main(int argc, char *argv[]) /* Input arguments are not used */
 {
-    int pid, pidIPv4;
+    int pid, pidIPv4, pidIPv6;
     int mem_comp;
-    uint16_t puertoIPv4;
+    uint16_t puertoIPv4, puertoIPv6;
     Datos *datos;
     FILE *outFile;
 
-    if (argc != 3){
-        printf("Error, falta un número para de puerto: UNIX / IPv4\n");
+    if (argc != 4){
+        printf("Error, falta un número para de puerto: UNIX / IPv4 / IPv6\n");
         exit(1);
     }
 
     //Obtengo el puerto IPv4
     puertoIPv4 = (uint16_t)atoi(argv[2]);
+    //Obtengo el puerto IPv6
+    puertoIPv6 = (uint16_t)atoi(argv[3]);
 
     // Creo un referencia a un bloque de memoria compartida
     mem_comp = shmget(ftok(".", 'S'), sizeof(datos), (IPC_CREAT | 0660));
@@ -49,6 +51,17 @@ int main(int argc, char *argv[]) /* Input arguments are not used */
     }
     else if(pidIPv4 == 0){
         configSocketIPv4(puertoIPv4, &(datos->IPv4));
+        exit(1);
+    }
+
+    //Creo un hijo para correr el socket IPv4
+    pidIPv6 = fork();
+    if (pidIPv6 < 0){
+        perror("Error al crear el hijo para IPv6\n");
+        exit(EXIT_FAILURE);
+    }
+    else if(pidIPv6 == 0){
+        configSocketIPv6(puertoIPv6, &(datos->IPv6));
         exit(1);
     }
 
