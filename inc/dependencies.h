@@ -15,14 +15,18 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-#define BUF_SIZE 64000 /* Buffer rx, tx max size  */
+#define BUF_SIZE 64000
 #define MAX_CLIENT 1000
 
 typedef struct
 {
 	long int Unix;
+	long int IPv4;
+	long int total;
 } Datos;
 
 void configSocketUnix(char *path, long *datos);
 
+void configSocketIPv4(uint16_t puerto, long *datos);
+int setUpIPv4(uint16_t puerto);
 #endif

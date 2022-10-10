@@ -33,6 +33,6 @@ int main(int argc, char *argv[])
 		printf("Error al establecer la conexion\n");
 		exit(1);
 	}
-	enviarPaquete(sockfd, size, 'b');
+	enviarPaquete(sockfd, size, 'a');
 	return 0;
 }

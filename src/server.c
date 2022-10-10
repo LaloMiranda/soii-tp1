@@ -2,15 +2,19 @@
 
 int main(int argc, char *argv[]) /* Input arguments are not used */
 {
-    int pid;
+    int pid, pidIPv4;
     int mem_comp;
+    uint16_t puertoIPv4;
     Datos *datos;
     FILE *outFile;
 
-    if (argc != 2){
-        printf("Error, falta un numero para el puerto UNIX\n");
+    if (argc != 3){
+        printf("Error, falta un número para de puerto: UNIX / IPv4\n");
         exit(1);
     }
+
+    //Obtengo el puerto IPv4
+    puertoIPv4 = (uint16_t)atoi(argv[2]);
 
     // Creo un referencia a un bloque de memoria compartida
     mem_comp = shmget(ftok(".", 'S'), sizeof(datos), (IPC_CREAT | 0660));
@@ -29,11 +33,22 @@ int main(int argc, char *argv[]) /* Input arguments are not used */
     //Creo un hijo para correr el socket de unix
     pid = fork();
     if (pid < 0){
-        perror("Error al crear el hijo1\n");
+        perror("Error al crear el hijo para unix\n");
         exit(EXIT_FAILURE);
     }
     else if(pid == 0){
         configSocketUnix(argv[1], &(datos->Unix));
+        exit(1);
+    }
+
+    //Creo un hijo para correr el socket IPv4
+    pidIPv4 = fork();
+    if (pidIPv4 < 0){
+        perror("Error al crear el hijo para IPv4\n");
+        exit(EXIT_FAILURE);
+    }
+    else if(pidIPv4 == 0){
+        configSocketIPv4(puertoIPv4, &(datos->IPv4));
         exit(1);
     }
 
@@ -46,8 +61,12 @@ int main(int argc, char *argv[]) /* Input arguments are not used */
             perror("Error al abrir el archivo\n");
             exit(1);
         }
-        fprintf(outFile, " Unix socket: %ld B/s\n", datos->Unix);
+        datos->total += datos->Unix + datos->IPv4;
+        fprintf(outFile, "Unix socket: %ld B/s\n", datos->Unix);
+        fprintf(outFile, "IPv4 socket: %ld B/s\n", datos->IPv4);
+        fprintf(outFile, "Total data received: %ld B\n", datos->total);
         datos->Unix = 0;
+        datos->IPv4 = 0;
         fclose(outFile);
     }
     return 0;
