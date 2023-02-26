@@ -32,6 +32,11 @@ int main(int argc, char *argv[]) /* Input arguments are not used */
         exit(1);
     }
 
+    datos->IPv4 = 0;
+    datos->IPv6 = 0;
+    datos->Unix = 0;
+    datos->total = 0;
+
     //Creo un hijo para correr el socket de unix
     pid = fork();
     if (pid < 0){
@@ -78,9 +83,15 @@ int main(int argc, char *argv[]) /* Input arguments are not used */
         fprintf(outFile, "Unix socket: %ld B/s\n", datos->Unix);
         fprintf(outFile, "IPv4 socket: %ld B/s\n", datos->IPv4);
         fprintf(outFile, "Total data received: %ld B\n", datos->total);
+        fclose(outFile);
+        system("clear");
+        printf("---\n");
+        printf("Unix: %s\t IPv4: %i\t IPv6:%i\n", argv[1], puertoIPv4, puertoIPv6);
+        printf("Unix socket: %ld B/s\n", datos->Unix);
+        printf("IPv4 socket: %ld B/s\n", datos->IPv4);
+        printf("Total data received: %ld B\n", datos->total);
         datos->Unix = 0;
         datos->IPv4 = 0;
-        fclose(outFile);
     }
     return 0;
 }
