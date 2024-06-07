@@ -28,7 +28,7 @@ Para correr el servidor:
 Cliente utilizado para conexiones Unix que manda su paquete una vez por segundo, para correr este cliente:
 
 ```shell
-./bin/clienteIPv4.out [IP del servidor] [Puerto] [Tamaño del paquete]
+./bin/clienteUnix.out [IP del servidor] [Puerto] [Tamaño del paquete]
 ```
 
 ### Cliente IPv4
